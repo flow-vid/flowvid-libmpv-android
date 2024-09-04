@@ -12,24 +12,15 @@ import android.os.Environment
 import android.os.Parcelable
 import android.os.storage.StorageManager
 import android.provider.Settings
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
-import android.text.InputType
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
 import androidx.core.os.BundleCompat
-import androidx.core.widget.addTextChangedListener
 import java.io.*
 import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.roundToInt
 
-internal object Utils {
+object Utils {
     fun copyAssets(context: Context) {
         val assetManager = context.assets
         val files = arrayOf("subfont.ttf", "cacert.pem")
@@ -243,186 +234,6 @@ internal object Utils {
         }
     }
 
-
-    /**
-     * Helper class that keeps much more state than <code>AudioMetadata</code>, in order to facilitate
-     * updating a media session.
-     * @see MediaSessionCompat
-     */
-    class PlaybackStateCache {
-        val meta = AudioMetadata()
-        var cachePause = false
-            private set
-        var pause = false
-            private set
-        /** playback position in ms */
-        var position = -1L
-            private set
-        /** duration in ms */
-        var duration = 0L
-            private set
-        var playlistPos = 0
-            private set
-        var playlistCount = 0
-            private set
-        var speed = 1f
-            private set
-
-        /** playback position in seconds */
-        val positionSec get() = (position / 1000).toInt()
-        /** duration in seconds */
-        val durationSec get() = (duration / 1000f).roundToInt()
-
-        /** callback for properties of type <code>MPV_FORMAT_NONE</code> */
-        fun update(property: String): Boolean {
-            return meta.update(property)
-        }
-
-        /** callback for properties of type <code>MPV_FORMAT_STRING</code> */
-        fun update(property: String, value: String): Boolean {
-            if (meta.update(property, value))
-                return true
-            when (property) {
-                "speed" -> speed = value.toFloat()
-                else -> return false
-            }
-            return true
-        }
-
-        /** callback for properties of type <code>MPV_FORMAT_FLAG</code> */
-        fun update(property: String, value: Boolean): Boolean {
-            when (property) {
-                "pause" -> pause = value
-                "paused-for-cache" -> cachePause = value
-                else -> return false
-            }
-            return true
-        }
-
-        /** callback for properties of type <code>MPV_FORMAT_INT64</code> */
-        fun update(property: String, value: Long): Boolean {
-            when (property) {
-                "time-pos" -> position = value * 1000
-                "playlist-pos" -> playlistPos = value.toInt()
-                "playlist-count" -> playlistCount = value.toInt()
-                else -> return false
-            }
-            return true
-        }
-
-        /** callback for properties of type <code>MPV_FORMAT_DOUBLE</code> */
-        fun update(property: String, value: Double): Boolean {
-            when (property) {
-                "duration/full" -> duration = ceil(value * 1000.0).coerceAtLeast(0.0).toLong()
-                else -> return false
-            }
-            return true
-        }
-
-        private val mediaMetadataBuilder = MediaMetadataCompat.Builder()
-        private val playbackStateBuilder = PlaybackStateCompat.Builder()
-
-        private fun buildMediaMetadata(includeThumb: Boolean): MediaMetadataCompat {
-            // TODO could provide: genre, num_tracks, track_number, year
-            return with (mediaMetadataBuilder) {
-                putText(MediaMetadataCompat.METADATA_KEY_ALBUM, meta.mediaAlbum)
-                if (includeThumb) {
-                    // put even if it's null to reset any previous art
-                    putBitmap(MediaMetadataCompat.METADATA_KEY_ART,
-                        BackgroundPlaybackService.thumbnail
-                    )
-                }
-                putText(MediaMetadataCompat.METADATA_KEY_ARTIST, meta.mediaArtist)
-                putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration.takeIf { it > 0 } ?: -1)
-                putText(MediaMetadataCompat.METADATA_KEY_TITLE, meta.mediaTitle)
-                build()
-            }
-        }
-
-        private fun buildPlaybackState(): PlaybackStateCompat {
-            val stateInt = when {
-                position < 0 || duration <= 0 -> PlaybackStateCompat.STATE_NONE
-                cachePause -> PlaybackStateCompat.STATE_BUFFERING
-                pause -> PlaybackStateCompat.STATE_PAUSED
-                else -> PlaybackStateCompat.STATE_PLAYING
-            }
-            var actions = PlaybackStateCompat.ACTION_PLAY or
-                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                    PlaybackStateCompat.ACTION_PAUSE or
-                    PlaybackStateCompat.ACTION_SET_REPEAT_MODE
-            if (duration > 0)
-                actions = actions or PlaybackStateCompat.ACTION_SEEK_TO
-            if (playlistCount > 1) {
-                // we could be very pedantic here but it's probably better to either show both or none
-                actions = actions or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                        PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE
-            }
-            return with (playbackStateBuilder) {
-                setState(stateInt, position, speed)
-                setActions(actions)
-                //setActiveQueueItemId(0) TODO
-                build()
-            }
-        }
-
-        fun write(session: MediaSessionCompat, includeThumb: Boolean = true) {
-            with (session) {
-                setMetadata(buildMediaMetadata(includeThumb))
-                val ps = buildPlaybackState()
-                isActive = ps.state != PlaybackStateCompat.STATE_NONE
-                setPlaybackState(ps)
-                //setQueue(listOf()) TODO
-            }
-        }
-    }
-
-    class OpenUrlDialog(context: Context) {
-        val builder = AlertDialog.Builder(context)
-        private val editText = EditText(builder.context)
-        private lateinit var dialog: AlertDialog
-
-        init {
-            editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
-            editText.addTextChangedListener {
-                val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                if (it.isNullOrEmpty()) {
-                    editText.error = null
-                    positiveButton.isEnabled = false
-                } else if (validate(it.toString())) {
-                    editText.error = null
-                    positiveButton.isEnabled = true
-                } else {
-                    editText.error = context.getString(R.string.uri_invalid_protocol)
-                    positiveButton.isEnabled = false
-                }
-            }
-
-            builder.apply {
-                setTitle(R.string.action_open_url)
-                setView(editText)
-            }
-        }
-
-        private fun validate(text: String): Boolean {
-            val uri = Uri.parse(text)
-            return uri.isHierarchical && !uri.isRelative &&
-                    !(uri.host.isNullOrEmpty() && uri.path.isNullOrEmpty()) &&
-                    PROTOCOLS.contains(uri.scheme)
-        }
-
-        fun create(): AlertDialog {
-            dialog = builder.create()
-            editText.post { // initial state
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-            }
-            return dialog
-        }
-
-        val text: String
-            get() = editText.text.toString()
-    }
-
     inline fun <reified T: Parcelable> getParcelableArray(bundle: Bundle, key: String): Array<T> {
         val array = BundleCompat.getParcelableArray(bundle, key, T::class.java)
         return if (array == null)
@@ -475,5 +286,19 @@ internal object Utils {
     val PROTOCOLS = setOf(
         "file", "content", "http", "https", "data",
         "rtmp", "rtmps", "rtp", "rtsp", "mms", "mmst", "mmsh", "tcp", "udp", "lavf"
+    )
+
+    data class Versions(
+        val mpv: String,
+        val buildDate: String,
+        val libPlacebo: String,
+        val ffmpeg: String,
+    )
+
+    val VERSIONS = Versions(
+        mpv = "%MPV_VERSION%",
+        buildDate = "%DATE%",
+        libPlacebo = "%LIBPLACEBO_VERSION%",
+        ffmpeg = "%FFMPEG_VERSION%",
     )
 }

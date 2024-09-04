@@ -11,11 +11,11 @@ if [ "$os" == "linux" ]; then
 	if [ $TRAVIS -eq 0 ]; then
 		if hash yum &>/dev/null; then
 			sudo yum install autoconf pkgconfig libtool ninja-build \
-			python3-pip unzip wget
+			python3-pip unzip wget nasm
 			pip3 install -U meson
 		elif apt-get -v &>/dev/null; then
 			sudo apt-get install autoconf pkg-config libtool ninja-build \
-			python3-pip unzip wget
+			python3-pip unzip wget nasm
 			pip3 install -U meson
 		else
 			echo "Note: dependencies were not installed, you have to do that manually."
