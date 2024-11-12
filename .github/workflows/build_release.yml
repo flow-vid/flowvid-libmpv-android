@@ -21,6 +21,15 @@ jobs:
           java-version: '17'
           distribution: temurin
 
+      - name: Export env vars
+        run: buildscripts/include/ci.sh export >>$GITHUB_ENV
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install autoconf pkg-config libtool ninja-build python3-pip
+          sudo pip3 install meson
+
       - name: Build the release artifacts
         run: |
           set -x
