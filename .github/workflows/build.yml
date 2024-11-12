@@ -21,6 +21,9 @@ jobs:
           java-version: '17'
           distribution: temurin
 
+      - name: Export env vars
+        run: buildscripts/include/ci.sh export >>$GITHUB_ENV
+
       - uses: actions/cache@v4
         with:
           path: gh-cache/
@@ -37,7 +40,7 @@ jobs:
       - name: Download deps
         run: |
           mkdir -p "$CACHE_FOLDER"
-          buildscripts/.travis.sh install
+          buildscripts/include/ci.sh install
         env:
           CACHE_MODE: "folder"
           CACHE_FOLDER: "${{ github.workspace }}/gh-cache"
