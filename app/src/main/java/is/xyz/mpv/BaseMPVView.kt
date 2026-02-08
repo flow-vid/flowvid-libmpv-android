@@ -53,7 +53,7 @@ abstract class BaseMPVView(context: Context, attrs: AttributeSet) : SurfaceView(
      * Call this once before the view is destroyed.
      */
     fun destroy() {
-        // Disable surface callbacks to avoid using unintialized mpv state
+        // Disable surface callbacks to avoid using uninitialized mpv state
         holder.removeCallback(this)
         clearAllProperties()
         MPVLib.destroy()
