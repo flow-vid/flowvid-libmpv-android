@@ -4,16 +4,16 @@
 # Make sure to keep v_ndk and v_ndk_n in sync, both are listed on the NDK download page
 
 v_sdk=11076708_latest
-v_ndk=r28c
-v_ndk_n=28.2.13676358
+v_ndk=r29
+v_ndk_n=29.0.14206865
 v_sdk_platform=35
 v_sdk_build_tools=35.0.0
 
 v_lua=5.2.4
 v_unibreak=6.1
-v_harfbuzz=11.4.3
+v_harfbuzz=12.1.0
 v_fribidi=1.0.16
-v_freetype=2.13.3
+v_freetype=2.14.1
 v_mbedtls=3.6.4
 
 
