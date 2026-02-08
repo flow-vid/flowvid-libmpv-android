@@ -12,24 +12,15 @@ import android.os.Environment
 import android.os.Parcelable
 import android.os.storage.StorageManager
 import android.provider.Settings
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
-import android.text.InputType
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
 import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.widget.addTextChangedListener
 import java.io.*
 import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.roundToInt
 
 internal object Utils {
     private fun copyAssetFile(assetManager: AssetManager, filename: String, outFile: File): Boolean {
