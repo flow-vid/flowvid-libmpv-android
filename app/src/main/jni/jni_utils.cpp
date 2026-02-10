@@ -37,15 +37,15 @@ void init_methods_cache(JNIEnv *env)
     // static final android.graphics.Bitmap$Config ARGB_8888
     android_graphics_Bitmap_Config_ARGB_8888 = env->GetStaticFieldID(android_graphics_Bitmap_Config, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
 
-    mpv_MPVLib = FIND_CLASS("is/xyz/mpv/MPVLib");
-    mpv_MPVLib_eventProperty_S  = env->GetStaticMethodID(mpv_MPVLib, "eventProperty", "(Ljava/lang/String;)V"); // eventProperty(String)
-    mpv_MPVLib_eventProperty_Sb = env->GetStaticMethodID(mpv_MPVLib, "eventProperty", "(Ljava/lang/String;Z)V"); // eventProperty(String, boolean)
-    mpv_MPVLib_eventProperty_Sl = env->GetStaticMethodID(mpv_MPVLib, "eventProperty", "(Ljava/lang/String;J)V"); // eventProperty(String, long)
-    mpv_MPVLib_eventProperty_Sd = env->GetStaticMethodID(mpv_MPVLib, "eventProperty", "(Ljava/lang/String;D)V"); // eventProperty(String, double)
-    mpv_MPVLib_eventProperty_SS = env->GetStaticMethodID(mpv_MPVLib, "eventProperty", "(Ljava/lang/String;Ljava/lang/String;)V"); // eventProperty(String, String)
-    mpv_MPVLib_eventProperty_SN = env->GetStaticMethodID(mpv_MPVLib, "eventProperty", "(Ljava/lang/String;Lis/xyz/mpv/MPVNode;)V"); // eventProperty(String, MPVNode)
-    mpv_MPVLib_event = env->GetStaticMethodID(mpv_MPVLib, "event", "(ILis/xyz/mpv/MPVNode;)V"); // event(int, MPVNode)
-    mpv_MPVLib_logMessage_SiS = env->GetStaticMethodID(mpv_MPVLib, "logMessage", "(Ljava/lang/String;ILjava/lang/String;)V"); // logMessage(String, int, String)
+    mpv_MPV = FIND_CLASS("is/xyz/mpv/MPV");
+    mpv_MPV_eventProperty_S  = env->GetMethodID(mpv_MPV, "eventProperty", "(Ljava/lang/String;)V"); // eventProperty(String)
+    mpv_MPV_eventProperty_Sb = env->GetMethodID(mpv_MPV, "eventProperty", "(Ljava/lang/String;Z)V"); // eventProperty(String, boolean)
+    mpv_MPV_eventProperty_Sl = env->GetMethodID(mpv_MPV, "eventProperty", "(Ljava/lang/String;J)V"); // eventProperty(String, long)
+    mpv_MPV_eventProperty_Sd = env->GetMethodID(mpv_MPV, "eventProperty", "(Ljava/lang/String;D)V"); // eventProperty(String, double)
+    mpv_MPV_eventProperty_SS = env->GetMethodID(mpv_MPV, "eventProperty", "(Ljava/lang/String;Ljava/lang/String;)V"); // eventProperty(String, String)
+    mpv_MPV_eventProperty_SN = env->GetMethodID(mpv_MPV, "eventProperty", "(Ljava/lang/String;Lis/xyz/mpv/MPVNode;)V"); // eventProperty(String, MPVNode)
+    mpv_MPV_event = env->GetMethodID(mpv_MPV, "event", "(ILis/xyz/mpv/MPVNode;)V"); // event(int, MPVNode)
+    mpv_MPV_logMessage_SiS = env->GetMethodID(mpv_MPV, "logMessage", "(Ljava/lang/String;ILjava/lang/String;)V"); // logMessage(String, int, String)
 
     // for array node creation, tbh, it might be better to use "List" instead but i wanted consitent naming
     mpv_MPVNode = FIND_CLASS("is/xyz/mpv/MPVNode");

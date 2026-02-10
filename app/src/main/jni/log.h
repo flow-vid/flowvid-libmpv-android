@@ -14,7 +14,3 @@
 
 __attribute__((noreturn)) void die(const char *msg);
 
-#define CHECK_MPV_INIT() do { \
-	if (__builtin_expect(!g_mpv, 0)) \
-        die("libmpv is not initialized"); \
-	} while (0)

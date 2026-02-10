@@ -12,6 +12,7 @@ extern "C" {
 #include "jni_utils.h"
 #include "globals.h"
 #include "log.h"
+#include "mpv_context.h"
 
 extern "C" {
     jni_func(jobject, grabThumbnail, jint dimension);
@@ -26,7 +27,8 @@ static inline mpv_node make_node_str(const char *s)
 }
 
 jni_func(jobject, grabThumbnail, jint dimension) {
-    CHECK_MPV_INIT();
+    MpvContext *ctx = get_context(env, obj);
+    CHECK_CTX(ctx);
 
     mpv_node result{};
     {
@@ -38,7 +40,7 @@ jni_func(jobject, grabThumbnail, jint dimension) {
         c_array.values = c_args;
         c.format = MPV_FORMAT_NODE_ARRAY;
         c.u.list = &c_array;
-        if (mpv_command_node(g_mpv, &c, &result) < 0) {
+        if (mpv_command_node(ctx->mpv, &c, &result) < 0) {
             ALOGE("screenshot-raw command failed");
             return NULL;
         }
@@ -98,11 +100,11 @@ jni_func(jobject, grabThumbnail, jint dimension) {
     new_data += stride * crop_top; // move begin downwards
 
     // convert & scale to appropriate size
-    struct SwsContext *ctx = sws_getContext(
+    struct SwsContext *sws_ctx = sws_getContext(
         new_w, new_h, AV_PIX_FMT_BGR0,
         dimension, dimension, AV_PIX_FMT_RGB32,
         SWS_BICUBIC, NULL, NULL, NULL);
-    if (!ctx) {
+    if (!sws_ctx) {
         mpv_free_node_contents(&result);
         return NULL;
     }
@@ -113,8 +115,8 @@ jni_func(jobject, grabThumbnail, jint dimension) {
     uint8_t *src_p[4] = { new_data }, *dst_p[4] = { (uint8_t*) scaled };
     int src_stride[4] = { stride },
         dst_stride[4] = { (int) sizeof(jint) * dimension };
-    sws_scale(ctx, src_p, src_stride, 0, new_h, dst_p, dst_stride);
-    sws_freeContext(ctx);
+    sws_scale(sws_ctx, src_p, src_stride, 0, new_h, dst_p, dst_stride);
+    sws_freeContext(sws_ctx);
 
     mpv_free_node_contents(&result); // frees data->data
 

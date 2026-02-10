@@ -30,12 +30,15 @@ make CC="$CC" AR="$AR rc" RANLIB="$RANLIB" \
 	PLAT=linux LUA_T= LUAC_T= -j$cores
 
 # TO_BIN=/dev/null disables installing lua & luac
-make INSTALL=${INSTALL:-install} INSTALL_TOP="$prefix_dir" TO_BIN=/dev/null install
+# Install to usr/local to match meson-based builds (DESTDIR + prefix=/usr/local)
+lua_install_dir="$prefix_dir/usr/local"
+mkdir -p "$lua_install_dir"
+make INSTALL=${INSTALL:-install} INSTALL_TOP="$lua_install_dir" TO_BIN=/dev/null install
 
 # make pc only generates a partial pkg-config file because ????
-mkdir -p $prefix_dir/lib/pkgconfig
-make pc >$prefix_dir/lib/pkgconfig/lua.pc
-cat >>$prefix_dir/lib/pkgconfig/lua.pc <<'EOF'
+mkdir -p "$lua_install_dir/lib/pkgconfig"
+make pc >"$lua_install_dir/lib/pkgconfig/lua.pc"
+cat >>"$lua_install_dir/lib/pkgconfig/lua.pc" <<'EOF'
 Name: Lua
 Description:
 Version: ${version}

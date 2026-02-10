@@ -81,6 +81,7 @@ int jobject_to_mpv_node(JNIEnv *env, jobject jnode, mpv_node *node) {
             node->format = MPV_FORMAT_STRING;
             node->u.string = strdup(str);
             env->ReleaseStringUTFChars(jstr, str);
+            env->DeleteLocalRef(jstr);
         } else {
             node->format = MPV_FORMAT_STRING;
             node->u.string = strdup("");
@@ -136,6 +137,7 @@ int jobject_to_mpv_node(JNIEnv *env, jobject jnode, mpv_node *node) {
                     env->DeleteLocalRef(childNode);
                 }
             }
+            env->DeleteLocalRef(jarray);
         } else {
             node->format = MPV_FORMAT_NODE_ARRAY;
             node->u.list = (mpv_node_list*)malloc(sizeof(mpv_node_list));
@@ -200,6 +202,7 @@ int jobject_to_mpv_node(JNIEnv *env, jobject jnode, mpv_node *node) {
             env->DeleteLocalRef(setClass);
             env->DeleteLocalRef(entrySet);
             env->DeleteLocalRef(mapClass);
+            env->DeleteLocalRef(jmap);
         } else {
             node->format = MPV_FORMAT_NODE_MAP;
             node->u.list = (mpv_node_list*)malloc(sizeof(mpv_node_list));

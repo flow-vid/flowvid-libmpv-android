@@ -2,7 +2,7 @@
 
 #include <jni.h>
 
-#define jni_func_name(name) Java_is_xyz_mpv_MPVLib_##name
+#define jni_func_name(name) Java_is_xyz_mpv_MPV_##name
 #define jni_func(return_type, name, ...) JNIEXPORT return_type JNICALL jni_func_name(name) (JNIEnv *env, jobject obj, ##__VA_ARGS__)
 
 bool acquire_jni_env(JavaVM *vm, JNIEnv **env);
@@ -19,15 +19,15 @@ UTIL_EXTERN jclass android_graphics_Bitmap, android_graphics_Bitmap_Config;
 UTIL_EXTERN jmethodID android_graphics_Bitmap_createBitmap;
 UTIL_EXTERN jfieldID android_graphics_Bitmap_Config_ARGB_8888;
 
-UTIL_EXTERN jclass mpv_MPVLib;
-UTIL_EXTERN jmethodID mpv_MPVLib_eventProperty_S,
-	mpv_MPVLib_eventProperty_Sb,
-	mpv_MPVLib_eventProperty_Sl,
-	mpv_MPVLib_eventProperty_Sd,
-	mpv_MPVLib_eventProperty_SS,
-        mpv_MPVLib_eventProperty_SN,
-	mpv_MPVLib_event,
-	mpv_MPVLib_logMessage_SiS;
+UTIL_EXTERN jclass mpv_MPV;
+UTIL_EXTERN jmethodID mpv_MPV_eventProperty_S,
+	mpv_MPV_eventProperty_Sb,
+	mpv_MPV_eventProperty_Sl,
+	mpv_MPV_eventProperty_Sd,
+	mpv_MPV_eventProperty_SS,
+        mpv_MPV_eventProperty_SN,
+	mpv_MPV_event,
+	mpv_MPV_logMessage_SiS;
 
 
 UTIL_EXTERN jclass mpv_MPVNode_None, mpv_MPVNode_StringNode, mpv_MPVNode_BooleanNode,

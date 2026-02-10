@@ -6,30 +6,31 @@
 #include "jni_utils.h"
 #include "log.h"
 #include "node.h"
+#include "mpv_context.h"
 
-static void sendPropertyUpdateToJava(JNIEnv *env, mpv_event_property *prop)
+static void sendPropertyUpdateToJava(JNIEnv *env, jobject java_instance, mpv_event_property *prop)
 {
     jstring jprop = env->NewStringUTF(prop->name);
     jstring jvalue = NULL;
     switch (prop->format) {
     case MPV_FORMAT_NONE:
-        env->CallStaticVoidMethod(mpv_MPVLib, mpv_MPVLib_eventProperty_S, jprop);
+        env->CallVoidMethod(java_instance, mpv_MPV_eventProperty_S, jprop);
         break;
     case MPV_FORMAT_FLAG:
-        env->CallStaticVoidMethod(mpv_MPVLib, mpv_MPVLib_eventProperty_Sb, jprop,
+        env->CallVoidMethod(java_instance, mpv_MPV_eventProperty_Sb, jprop,
             (jboolean) (*(int*)prop->data != 0));
         break;
     case MPV_FORMAT_INT64:
-        env->CallStaticVoidMethod(mpv_MPVLib, mpv_MPVLib_eventProperty_Sl, jprop,
+        env->CallVoidMethod(java_instance, mpv_MPV_eventProperty_Sl, jprop,
             (jlong) *(int64_t*)prop->data);
         break;
     case MPV_FORMAT_DOUBLE:
-        env->CallStaticVoidMethod(mpv_MPVLib, mpv_MPVLib_eventProperty_Sd, jprop,
+        env->CallVoidMethod(java_instance, mpv_MPV_eventProperty_Sd, jprop,
             (jdouble) *(double*)prop->data);
         break;
     case MPV_FORMAT_STRING:
         jvalue = env->NewStringUTF(*(const char**)prop->data);
-        env->CallStaticVoidMethod(mpv_MPVLib, mpv_MPVLib_eventProperty_SS, jprop, jvalue);
+        env->CallVoidMethod(java_instance, mpv_MPV_eventProperty_SS, jprop, jvalue);
         break;
     case MPV_FORMAT_NODE:
     case MPV_FORMAT_NODE_ARRAY:
@@ -37,7 +38,7 @@ static void sendPropertyUpdateToJava(JNIEnv *env, mpv_event_property *prop)
         {
             jobject jnode = mpv_node_to_jobject(env, (const mpv_node *) prop->data);
             if (jnode) {
-                env->CallStaticVoidMethod(mpv_MPVLib, mpv_MPVLib_eventProperty_SN, jprop, jnode);
+                env->CallVoidMethod(java_instance, mpv_MPV_eventProperty_SN, jprop, jnode);
                 env->DeleteLocalRef(jnode);
             }
         }
@@ -52,16 +53,16 @@ static void sendPropertyUpdateToJava(JNIEnv *env, mpv_event_property *prop)
         env->DeleteLocalRef(jvalue);
 }
 
-static void sendEventToJava(JNIEnv *env, int event, mpv_node *event_node)
+static void sendEventToJava(JNIEnv *env, jobject java_instance, int event, mpv_node *event_node)
 {
     jobject jnode = mpv_node_to_jobject(env, event_node);
     if (jnode) {
-        env->CallStaticVoidMethod(mpv_MPVLib, mpv_MPVLib_event, event, jnode);
+        env->CallVoidMethod(java_instance, mpv_MPV_event, event, jnode);
         env->DeleteLocalRef(jnode);
     }
 }
 
-static void sendLogMessageToJava(JNIEnv *env, mpv_event_log_message *msg)
+static void sendLogMessageToJava(JNIEnv *env, jobject java_instance, mpv_event_log_message *msg)
 {
     // filter the most obvious cases of invalid utf-8, since Java would choke on it
     const auto invalid_utf8 = [] (unsigned char c) {
@@ -75,7 +76,7 @@ static void sendLogMessageToJava(JNIEnv *env, mpv_event_log_message *msg)
     jstring jprefix = env->NewStringUTF(msg->prefix);
     jstring jtext = env->NewStringUTF(msg->text);
 
-    env->CallStaticVoidMethod(mpv_MPVLib, mpv_MPVLib_logMessage_SiS,
+    env->CallVoidMethod(java_instance, mpv_MPV_logMessage_SiS,
         jprefix, (jint) msg->log_level, jtext);
 
     if (jprefix)
@@ -86,6 +87,12 @@ static void sendLogMessageToJava(JNIEnv *env, mpv_event_log_message *msg)
 
 void *event_thread(void *arg)
 {
+    MpvContext *ctx = static_cast<MpvContext*>(arg);
+    if (!ctx || !ctx->mpv || !ctx->java_instance) {
+        die("event_thread: invalid context");
+        return NULL;
+    }
+
     JNIEnv *env = NULL;
     acquire_jni_env(g_vm, &env);
     if (!env)
@@ -96,32 +103,39 @@ void *event_thread(void *arg)
         mpv_event_property *mp_property = NULL;
         mpv_event_log_message *msg = NULL;
 
-        mp_event = mpv_wait_event(g_mpv, -1.0);
+        mp_event = mpv_wait_event(ctx->mpv, -1.0);
 
-        if (g_event_thread_request_exit)
+        if (ctx->event_thread_request_exit)
             break;
 
         if (mp_event->event_id == MPV_EVENT_NONE)
             continue;
 
+        if (env->PushLocalFrame(32) < 0) {
+            ALOGE("event_thread: PushLocalFrame failed");
+            continue;
+        }
+
         switch (mp_event->event_id) {
         case MPV_EVENT_LOG_MESSAGE:
             msg = (mpv_event_log_message*)mp_event->data;
             ALOGV("[%s:%s] %s", msg->prefix, msg->level, msg->text);
-            sendLogMessageToJava(env, msg);
+            sendLogMessageToJava(env, ctx->java_instance, msg);
             break;
         case MPV_EVENT_PROPERTY_CHANGE:
             mp_property = (mpv_event_property*)mp_event->data;
-            sendPropertyUpdateToJava(env, mp_property);
+            sendPropertyUpdateToJava(env, ctx->java_instance, mp_property);
             break;
         default:
             ALOGV("event: %s\n", mpv_event_name(mp_event->event_id));
             mpv_node event_node;
             mpv_event_to_node(&event_node, mp_event);
-            sendEventToJava(env, mp_event->event_id, &event_node);
+            sendEventToJava(env, ctx->java_instance, mp_event->event_id, &event_node);
             mpv_free_node_contents(&event_node);
             break;
         }
+
+        env->PopLocalFrame(NULL);
     }
 
     g_vm->DetachCurrentThread();

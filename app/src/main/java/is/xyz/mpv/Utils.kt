@@ -22,7 +22,7 @@ import androidx.core.view.WindowInsetsCompat
 import java.io.*
 import kotlin.math.abs
 
-internal object Utils {
+object Utils {
     private fun copyAssetFile(assetManager: AssetManager, filename: String, outFile: File): Boolean {
         var ins: InputStream? = null
         var out: OutputStream? = null
@@ -209,19 +209,19 @@ internal object Utils {
         var mediaAlbum: String? = null
             private set
 
-        fun readAll() {
-            mediaTitle = MPVLib.getPropertyString("media-title")
-            update("metadata") // read artist & album
+        fun readAll(mpvInstance: MPV) {
+            mediaTitle = mpvInstance.prop["media-title"]
+            update("metadata", mpvInstance) // read artist & album
         }
 
         /** callback for properties of type <code>MPV_FORMAT_NONE</code> */
-        fun update(property: String): Boolean {
+        fun update(property: String, mpvInstance: MPV): Boolean {
             // TODO?: maybe one day this could natively handle a MPV_FORMAT_NODE_MAP
             if (property == "metadata") {
                 // If we observe individual keys libmpv won't notify us once they become
                 // unavailable, so we observe "metadata" and read both keys on trigger.
-                mediaArtist = MPVLib.getPropertyString("metadata/by-key/Artist")
-                mediaAlbum = MPVLib.getPropertyString("metadata/by-key/Album")
+                mediaArtist = mpvInstance.prop["metadata/by-key/Artist"]
+                mediaAlbum = mpvInstance.prop["metadata/by-key/Album"]
                 return true
             }
             return false

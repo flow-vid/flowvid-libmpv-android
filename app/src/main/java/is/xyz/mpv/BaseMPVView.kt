@@ -5,46 +5,41 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import `is`.xyz.mpv.MPVLib.MpvFormat
-import `is`.xyz.mpv.MPVLib.observeProperty
-import `is`.xyz.mpv.MPVLib.propBoolean
-import `is`.xyz.mpv.MPVLib.propDouble
-import `is`.xyz.mpv.MPVLib.propFloat
-import `is`.xyz.mpv.MPVLib.propInt
-import `is`.xyz.mpv.MPVLib.propLong
-import `is`.xyz.mpv.MPVLib.propNode
-import `is`.xyz.mpv.MPVLib.propString
 
 // Contains only the essential code needed to get a picture on the screen
 
-abstract class BaseMPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attrs), SurfaceHolder.Callback {
+abstract class BaseMPVView(context: Context, attrs: AttributeSet?) : SurfaceView(context, attrs),
+    SurfaceHolder.Callback {
+
+    // MPVLib instance for this view - each view has its own player instance
+    val mpv = MPV()
+
     /**
      * Initialize libmpv.
      *
      * Call this once before the view is shown.
      */
     fun initialize(configDir: String, cacheDir: String) {
-        MPVLib.create(context)
+        mpv.create(context)
 
         /* set normal options (user-supplied config can override) */
-        MPVLib.setOptionString("config", "yes")
-        MPVLib.setOptionString("config-dir", configDir)
+        mpv.setOptionString("config", "yes")
+        mpv.setOptionString("config-dir", configDir)
         for (opt in arrayOf("gpu-shader-cache-dir", "icc-cache-dir"))
-            MPVLib.setOptionString(opt, cacheDir)
+            mpv.setOptionString(opt, cacheDir)
         initOptions()
 
-        MPVLib.init()
+        mpv.init()
 
         /* set hardcoded options */
         postInitOptions()
         // could mess up VO init before surfaceCreated() is called
-        MPVLib.setOptionString("force-window", "no")
+        mpv.setOptionString("force-window", "no")
         // need to idle at least once for playFile() logic to work
-        MPVLib.setOptionString("idle", "once")
+        mpv.setOptionString("idle", "once")
 
         holder.addCallback(this)
         observeProperties()
-        reobserveAllProperties()
     }
 
     /**
@@ -55,8 +50,7 @@ abstract class BaseMPVView(context: Context, attrs: AttributeSet) : SurfaceView(
     fun destroy() {
         // Disable surface callbacks to avoid using uninitialized mpv state
         holder.removeCallback(this)
-        clearAllProperties()
-        MPVLib.destroy()
+        mpv.destroy()
     }
 
     protected abstract fun initOptions()
@@ -81,55 +75,39 @@ abstract class BaseMPVView(context: Context, attrs: AttributeSet) : SurfaceView(
      */
     fun setVo(vo: String) {
         voInUse = vo
-        MPVLib.setOptionString("vo", vo)
+        mpv.setOptionString("vo", vo)
     }
 
     // Surface callbacks
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        MPVLib.setPropertyString("android-surface-size", "${width}x$height")
+        mpv.setPropertyString("android-surface-size", "${width}x$height")
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.w(TAG, "attaching surface")
-        MPVLib.attachSurface(holder.surface)
+        mpv.attachSurface(holder.surface)
         // This forces mpv to render subs/osd/whatever into our surface even if it would ordinarily not
-        MPVLib.setOptionString("force-window", "yes")
+        mpv.setOptionString("force-window", "yes")
 
         if (filePath != null) {
-            MPVLib.command("loadfile", filePath as String)
+            mpv.command("loadfile", filePath as String)
             filePath = null
         } else {
             // We disable video output when the context disappears, enable it back
-            MPVLib.setPropertyString("vo", voInUse)
+            mpv.setPropertyString("vo", voInUse)
         }
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         Log.w(TAG, "detaching surface")
-        MPVLib.setPropertyString("vo", "null")
-        MPVLib.setPropertyString("force-window", "no")
+        mpv.setPropertyString("vo", "null")
+        mpv.setPropertyString("force-window", "no")
         // Note that before calling detachSurface() we need to be sure that libmpv
         // is done using the surface.
         // FIXME: There could be a race condition here, because I don't think
         // setting a property will wait for VO deinit.
-        MPVLib.detachSurface()
-    }
-
-    private fun reobserveAllProperties() {
-        propBoolean.map.keys.forEach { observeProperty(it, MpvFormat.MPV_FORMAT_FLAG) }
-        propString.map.keys.forEach { observeProperty(it, MpvFormat.MPV_FORMAT_STRING) }
-        propDouble.map.keys.forEach { observeProperty(it, MpvFormat.MPV_FORMAT_DOUBLE) }
-        propFloat.map.keys.forEach { observeProperty(it, MpvFormat.MPV_FORMAT_DOUBLE) }
-        propLong.map.keys.forEach { observeProperty(it, MpvFormat.MPV_FORMAT_INT64) }
-        propInt.map.keys.forEach { observeProperty(it, MpvFormat.MPV_FORMAT_INT64) }
-        propNode.map.keys.forEach { observeProperty(it, MpvFormat.MPV_FORMAT_NODE) }
-    }
-
-    private fun clearAllProperties() {
-        listOf(propInt, propDouble, propString, propFloat, propLong, propNode).forEach {
-            it.map.clear()
-        }
+        mpv.detachSurface()
     }
 
     companion object {
