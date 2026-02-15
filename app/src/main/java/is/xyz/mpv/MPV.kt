@@ -7,7 +7,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 
 @Suppress("unused")
@@ -98,7 +96,7 @@ class MPV {
     private val observedProperties = mutableMapOf<String, Int>()
 
     fun initSession() {
-        observedProperties.forEach { (property, format) ->
+        observedProperties.asIterable().forEach { (property, format) ->
             observeProperty(property, format)
         }
     }
