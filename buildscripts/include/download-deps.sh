@@ -22,16 +22,19 @@ if [ ! -d libxml2 ]; then
 fi
 
 # dav1d
-[ ! -d dav1d ] && git clone https://github.com/videolan/dav1d
+[ ! -d dav1d ] && git clone --depth 1 https://github.com/videolan/dav1d
 
 # ffmpeg
 if [ ! -d ffmpeg ]; then
-	git clone https://github.com/FFmpeg/FFmpeg ffmpeg
-	[ $IN_CI -eq 1 ] && git -C ffmpeg checkout $v_ci_ffmpeg
+    if [ $IN_CI -eq 1 ]; then
+        git clone --branch $v_ci_ffmpeg --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
+    else
+        git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
+    fi
 fi
 
 # freetype2
-[ ! -d freetype2 ] && git clone --recurse-submodules https://gitlab.freedesktop.org/freetype/freetype.git freetype2 -b VER-${v_freetype//./-}
+[ ! -d freetype2 ] && git clone --depth 1 --recurse-submodules https://gitlab.freedesktop.org/freetype/freetype.git freetype2 -b VER-${v_freetype//./-}
 
 # fribidi
 if [ ! -d fribidi ]; then
@@ -55,7 +58,7 @@ if [ ! -d unibreak ]; then
 fi
 
 # libass
-[ ! -d libass ] && git clone https://github.com/libass/libass
+[ ! -d libass ] && git clone --depth 1 https://github.com/libass/libass
 
 # lua
 if [ ! -d lua ]; then
@@ -65,9 +68,9 @@ if [ ! -d lua ]; then
 fi
 
 # libplacebo
-[ ! -d libplacebo ] && git clone --recursive https://github.com/haasn/libplacebo
+[ ! -d libplacebo ] && git clone --depth 1 --recursive https://github.com/haasn/libplacebo
 
 # mpv
-[ ! -d mpv ] && git clone https://github.com/mpv-player/mpv
+[ ! -d mpv ] && git clone --depth 1 https://github.com/mpv-player/mpv
 
 cd ..
