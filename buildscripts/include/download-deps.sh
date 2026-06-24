@@ -24,13 +24,9 @@ fi
 # dav1d
 [ ! -d dav1d ] && git clone --depth 1 https://github.com/videolan/dav1d
 
-# ffmpeg
+# ffmpeg — ALWAYS pin to the release tag (was only pinned when IN_CI=1; our build pulled master).
 if [ ! -d ffmpeg ]; then
-    if [ $IN_CI -eq 1 ]; then
-        git clone --branch $v_ci_ffmpeg --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
-    else
-        git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
-    fi
+    git clone --branch $v_ci_ffmpeg --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
 fi
 
 # freetype2
@@ -57,8 +53,8 @@ if [ ! -d unibreak ]; then
 		tar -xz -C unibreak --strip-components=1
 fi
 
-# libass
-[ ! -d libass ] && git clone --depth 1 https://github.com/libass/libass
+# libass — PINNED to 0.17.4 (master pulled ahead of stable mpv 0.41.0 → broke Android rendering)
+[ ! -d libass ] && git clone --depth 1 --branch 0.17.4 https://github.com/libass/libass
 
 # lua
 if [ ! -d lua ]; then
@@ -67,10 +63,11 @@ if [ ! -d lua ]; then
 		tar -xz -C lua --strip-components=1
 fi
 
-# libplacebo
-[ ! -d libplacebo ] && git clone --depth 1 --recursive https://github.com/haasn/libplacebo
+# libplacebo — PINNED to v7.351.0 (the version bundled with mpv 0.41.0; master broke ABI)
+[ ! -d libplacebo ] && git clone --depth 1 --recursive --branch v7.351.0 https://github.com/haasn/libplacebo
 
-# mpv
-[ ! -d mpv ] && git clone --depth 1 https://github.com/mpv-player/mpv
+# mpv — PINNED to v0.41.0 stable (was master HEAD = v0.41.0-dev which black-screens on MediaTek;
+# v0.41.0 is the known-good build that mpv-android-lib:0.1.12 / NuvioTV use)
+[ ! -d mpv ] && git clone --depth 1 --branch v0.41.0 https://github.com/mpv-player/mpv
 
 cd ..
