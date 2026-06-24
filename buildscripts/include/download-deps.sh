@@ -63,8 +63,8 @@ if [ ! -d lua ]; then
 		tar -xz -C lua --strip-components=1
 fi
 
-# libplacebo — PINNED to v7.351.0 (the version bundled with mpv 0.41.0; master broke ABI)
-[ ! -d libplacebo ] && git clone --depth 1 --recursive --branch v7.351.0 https://github.com/haasn/libplacebo
+# libplacebo — PINNED to v7.360.1 (the minimum mpv 0.41.0's meson requires; master broke ABI)
+[ ! -d libplacebo ] && git clone --depth 1 --recursive --branch v7.360.1 https://github.com/haasn/libplacebo
 
 # mpv — PINNED to v0.41.0 stable (was master HEAD = v0.41.0-dev which black-screens on MediaTek;
 # v0.41.0 is the known-good build that mpv-android-lib:0.1.12 / NuvioTV use)
