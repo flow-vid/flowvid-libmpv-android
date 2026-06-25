@@ -38,11 +38,11 @@ dep_mpv_android=(mpv)
 
 ## for CI workflow
 
-# pinned ffmpeg revision — n7.1 (last 7.x stable). FFmpeg 8.0 reworked the MediaCodec hwaccel and
-# black-screens under vo=gpu on MT9618 ("h264_mediacodec: Both surface and native_window are NULL").
-# 7.1 is the FFmpeg generation that mpv-android-lib:0.1.12 / NuvioTV ship and that has working
-# mediacodec GL-interop. Changing this invalidates the prefix cache → full clean rebuild.
-v_ci_ffmpeg=n7.1
+# pinned ffmpeg revision — n8.0 (latest). The earlier vo=gpu black screen was actually a PAUSE bug
+# in the app, not FFmpeg 8.0; once fixed, mpv 0.41 + FFmpeg 8.0 decode correctly. FlowVidTV uses
+# vo=mediacodec_embed (HW, correct colors) by default and vo=gpu+software only for the styled-subs
+# mode, so the n7.1 downgrade is unnecessary. Stay on latest for newest codec/security fixes.
+v_ci_ffmpeg=n8.0
 
 # filename used to uniquely identify a build prefix
 ci_tarball="prefix-ndk-${v_ndk}-lua-${v_lua}-unibreak-${v_unibreak}-harfbuzz-${v_harfbuzz}-fribidi-${v_fribidi}-freetype-${v_freetype}-mbedtls-${v_mbedtls}-ffmpeg-${v_ci_ffmpeg}.tgz"
