@@ -1,3 +1,8 @@
+> ## FlowVid fork: LGPL libmpv for Android
+> An LGPL build of libmpv (mpv `-Dgpl=false`, FFmpeg `--disable-gpl`, no x264/x265), packaged as an AAR and
+> bundled in the FlowVid Android app and TV. Fork of `abdallahmehiz/mpv-android`; only the build flags differ.
+> More at [flow-vid.com](https://flow-vid.com).
+
 # mpv-android-lib
 
 [![Build Status](https://github.com/abdallahmehiz/mpv-android/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/abdallahmehiz/mpv-android/actions/workflows/build.yml)
