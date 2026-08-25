@@ -57,4 +57,5 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: mpv-lib-${{ matrix.architecture }}
-          path: lib/build/outputs/aar/app-release.aar
+          path: lib/build/outputs/aar/lib-release.aar
+          if-no-files-found: error
