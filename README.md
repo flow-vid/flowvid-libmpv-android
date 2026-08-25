@@ -1,15 +1,19 @@
 > ## FlowVid fork: LGPL libmpv for Android
-> An LGPL build of libmpv (mpv `-Dgpl=false`, FFmpeg `--disable-gpl`, no x264/x265), packaged as an AAR and
-> bundled in the FlowVid Android app and TV. Fork of `abdallahmehiz/mpv-android`; only the build flags differ.
-> More at [flow-vid.com](https://flow-vid.com).
+> An LGPL build of libmpv (mpv `-Dgpl=false`, FFmpeg `--disable-gpl`, no x264/x265), packaged as an AAR
+> and bundled in FlowVid Android and Android TV. This is a fork of `abdallahmehiz/mpv-android` with
+> FlowVid's licensing and release configuration.
 
 # mpv-android-lib
 
-[![Build Status](https://github.com/abdallahmehiz/mpv-android/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/abdallahmehiz/mpv-android/actions/workflows/build.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.abdallahmehiz/mpv-android-lib.svg)](https://central.sonatype.com/artifact/io.github.abdallahmehiz/mpv-android-lib)
+[![Build status](https://github.com/flow-vid/android-mpv/actions/workflows/build_release.yml/badge.svg?branch=library)](https://github.com/flow-vid/android-mpv/actions/workflows/build_release.yml)
+[![Latest release](https://img.shields.io/github/v/release/flow-vid/android-mpv)](https://github.com/flow-vid/android-mpv/releases)
 
 A library version of [mpv-android](https://github.com/mpv-android/mpv-android), providing [libmpv](https://github.com/mpv-player/mpv) for Android applications.
 Initially made for [mpvKt](https://github.com/abdallahmehiz/mpvKt).
+
+FlowVid Android and Android TV currently use immutable release `v0.1.12-lgpl-7`. Its AAR is
+byte-identical to the production-proven `v0.1.12-lgpl-6` artifact and has SHA-256
+`729a70c1ac86ba4f1e03a9bde73762f6370ed97ae08dc8faabf448edcf9ebef6`.
 
 ## "New" Features
 
@@ -19,11 +23,12 @@ Initially made for [mpvKt](https://github.com/abdallahmehiz/mpvKt).
 
 ## Installation
 
-Add the dependency to your `build.gradle`:
+Download the AAR from this repository's [Releases](../../releases), place it in your module's `libs`
+directory, and add the local file dependency:
 
 ```groovy
 dependencies {
-    implementation "io.github.abdallahmehiz:mpv-android-lib:<version>"
+    implementation files("libs/flowvid-libmpv.aar")
 }
 ```
 

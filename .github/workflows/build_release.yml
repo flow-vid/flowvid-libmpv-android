@@ -1,4 +1,4 @@
-name: CI
+name: Release Android libmpv
 
 on:
   push:
@@ -9,14 +9,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: write
+      id-token: write
+      attestations: write
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           java-version: '17'
           distribution: temurin
@@ -50,17 +52,60 @@ jobs:
       - name: Copy build artifacts
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          set -e
-          mv lib/build/outputs/aar/lib-release.aar mpv-android-lib-${{ env.VERSION_TAG }}.aar
-      - name: Create Release
+          set -euo pipefail
+          mkdir -p dist
+          mv lib/build/outputs/aar/lib-release.aar "dist/mpv-android-lib-${VERSION_TAG}.aar"
+          cp buildscripts/include/depinfo.sh dist/build-inputs.sh
+          cat > dist/build-manifest.txt <<EOF
+          recipe_commit=${GITHUB_SHA}
+          release_tag=${VERSION_TAG}
+          license_mode=LGPL_no_GPL
+          architectures=arm64-v8a,armeabi-v7a,x86,x86_64
+          EOF
+          (cd dist && sha256sum *.aar build-inputs.sh build-manifest.txt > SHA256SUMS.txt)
+
+      - name: Upload workflow artifact
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          tag_name: ${{ env.VERSION_TAG }}
-          name: mpv-android-lib ${{ env.VERSION_TAG }}
-          body: |
-            library version ${{ env.VERSION_TAG }}
-          files: |
-            mpv-android-lib-${{ env.VERSION_TAG }}.aar
-          draft: false
-          prerelease: false
+          name: android-libmpv-${{ env.VERSION_TAG }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attest release evidence
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        with:
+          subject-path: |
+            dist/*.aar
+            dist/SHA256SUMS.txt
+
+      - name: Publish immutable GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${VERSION_TAG}"
+          state=$(gh release view "${tag}" --json isDraft,isImmutable,targetCommitish 2>/dev/null || true)
+          if [ -z "${state}" ]; then
+            gh release create "${tag}" --draft --target "${GITHUB_SHA}" \
+              --title "FlowVid Android libmpv ${tag}" \
+              --notes "Pinned four-ABI LGPL libmpv build with manifest, checksums and provenance."
+          elif [ "$(jq -r '.isImmutable' <<<"${state}")" = "true" ]; then
+            for file in dist/*; do
+              name=$(basename "${file}")
+              local_digest="sha256:$(sha256sum "${file}" | cut -d' ' -f1)"
+              remote_digest=$(gh release view "${tag}" --json assets \
+                --jq ".assets[] | select(.name == \"${name}\") | .digest")
+              test "${remote_digest}" = "${local_digest}"
+            done
+            echo "Immutable release ${tag} already matches this build."
+            exit 0
+          else
+            test "$(jq -r '.isDraft' <<<"${state}")" = "true"
+            test "$(jq -r '.targetCommitish' <<<"${state}")" = "${GITHUB_SHA}"
+          fi
+          gh release upload "${tag}" dist/* --clobber
+          gh release edit "${tag}" --draft=false
+          test "$(gh release view "${tag}" --json isImmutable --jq '.isImmutable')" = "true"
