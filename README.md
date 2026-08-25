@@ -1,25 +1,24 @@
-> ## FlowVid fork: LGPL libmpv for Android
-> An LGPL build of libmpv (mpv `-Dgpl=false`, FFmpeg `--disable-gpl`, no x264/x265), packaged as an AAR
-> and bundled in FlowVid Android and Android TV. This is a fork of `abdallahmehiz/mpv-android` with
-> FlowVid's licensing and release configuration.
-
-# mpv-android-lib
+# FlowVid Android libmpv
 
 [![Build status](https://github.com/flow-vid/android-mpv/actions/workflows/build_release.yml/badge.svg?branch=library)](https://github.com/flow-vid/android-mpv/actions/workflows/build_release.yml)
 [![Latest release](https://img.shields.io/github/v/release/flow-vid/android-mpv)](https://github.com/flow-vid/android-mpv/releases)
 
-A library version of [mpv-android](https://github.com/mpv-android/mpv-android), providing [libmpv](https://github.com/mpv-player/mpv) for Android applications.
-Initially made for [mpvKt](https://github.com/abdallahmehiz/mpvKt).
+An Android AAR containing [libmpv](https://github.com/mpv-player/mpv), built for FlowVid Android and
+Android TV under the LGPL. mpv uses `-Dgpl=false`; FFmpeg uses `--disable-gpl`; GPL and nonfree
+components such as x264 and x265 are not included.
 
-FlowVid Android and Android TV currently use immutable release `v0.1.12-lgpl-7`. Its AAR is
-byte-identical to the production-proven `v0.1.12-lgpl-6` artifact and has SHA-256
+This repository is derived from [`abdallahmehiz/mpv-android`](https://github.com/abdallahmehiz/mpv-android)
+and retains its Android bindings while adding FlowVid's pinned LGPL build and immutable release path.
+
+FlowVid Android and Android TV use immutable release [`v0.1.12-lgpl-7`](../../releases/tag/v0.1.12-lgpl-7).
+Its AAR is byte-identical to `v0.1.12-lgpl-6` and has SHA-256
 `729a70c1ac86ba4f1e03a9bde73762f6370ed97ae08dc8faabf448edcf9ebef6`.
 
-## "New" Features
+## Capabilities
 
-* **Multiple MPV instances**
-* **`mpv_node` support**
-* **DASH support** 
+- Multiple independent MPV instances
+- `mpv_node` support
+- DASH support
 
 ## Installation
 

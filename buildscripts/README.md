@@ -58,12 +58,15 @@ If you've made changes to a single component (e.g. ffmpeg or mpv) and want a new
 
 Note that you might need to rebuild for other architectures (`--arch`) too depending on your device.
 
-Afterwards, build mpv-android and install the apk:
+Afterwards, package the release AAR:
 
 ```sh
 ./buildall.sh -n
-adb install -r ../lib/build/outputs/apk/default/debug/app-default-universal-debug.apk
+cd ..
+./gradlew :lib:assembleRelease
 ```
+
+The resulting library is `lib/build/outputs/aar/lib-release.aar`.
 
 ## Using Android Studio
 
