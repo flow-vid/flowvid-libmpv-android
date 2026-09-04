@@ -1,0 +1,35 @@
+This repository's build scripts, Android bindings and documentation are MIT-licensed. See LICENSE.
+
+The produced AAR bundles third-party components under their own licenses:
+
+  - mpv (libmpv), GNU Lesser General Public License v2.1 or later
+    https://github.com/mpv-player/mpv
+  - FFmpeg, GNU Lesser General Public License v3
+    https://github.com/FFmpeg/FFmpeg
+  - libplacebo, GNU Lesser General Public License v2.1 or later
+    https://code.videolan.org/videolan/libplacebo
+  - FriBidi, GNU Lesser General Public License v2.1 or later
+    https://github.com/fribidi/fribidi
+  - libass, ISC License
+    https://github.com/libass/libass
+  - dav1d, BSD 2-Clause License
+    https://code.videolan.org/videolan/dav1d
+  - HarfBuzz, MIT License
+    https://github.com/harfbuzz/harfbuzz
+  - libxml2, MIT License
+    https://github.com/GNOME/libxml2
+  - Lua 5.2, MIT License
+    https://www.lua.org
+  - libunibreak, zlib License
+    https://github.com/adah1972/libunibreak
+  - FreeType, used under the FreeType License (dual-licensed FTL or GPLv2)
+    https://freetype.org
+  - Mbed TLS, used under the Apache License 2.0 (dual-licensed Apache-2.0 or GPL-2.0-or-later)
+    https://github.com/Mbed-TLS/mbedtls
+
+mpv is built with -Dgpl=false and FFmpeg with --disable-gpl --enable-version3, so no GPL or nonfree
+component is included. No decoder is removed by this: H.264, HEVC, AV1 and VP9 are FFmpeg-native.
+
+The LGPL components are linked into libmpv.so inside the AAR. Corresponding source is this
+repository and the pinned upstream revisions recorded in buildscripts/include/depinfo.sh. Exact
+commits and checksums for a given build are recorded in that release's assets.
