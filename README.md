@@ -1,7 +1,7 @@
 # FlowVid Android libmpv
 
-[![Build status](https://github.com/flow-vid/android-mpv/actions/workflows/build_release.yml/badge.svg?branch=library)](https://github.com/flow-vid/android-mpv/actions/workflows/build_release.yml)
-[![Latest release](https://img.shields.io/github/v/release/flow-vid/android-mpv)](https://github.com/flow-vid/android-mpv/releases)
+[![Build status](https://github.com/flow-vid/flowvid-libmpv-android/actions/workflows/build_release.yml/badge.svg?branch=library)](https://github.com/flow-vid/flowvid-libmpv-android/actions/workflows/build_release.yml)
+[![Latest release](https://img.shields.io/github/v/release/flow-vid/flowvid-libmpv-android)](https://github.com/flow-vid/flowvid-libmpv-android/releases)
 
 An Android AAR containing [libmpv](https://github.com/mpv-player/mpv), built for FlowVid Android and
 Android TV under the LGPL. mpv uses `-Dgpl=false`; FFmpeg uses `--disable-gpl`; GPL and nonfree
