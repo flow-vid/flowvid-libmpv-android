@@ -134,3 +134,5 @@ jobs:
           gh release upload "${tag}" dist/* --clobber
           gh release edit "${tag}" --draft=false
           test "$(gh release view "${tag}" --json isImmutable --jq '.isImmutable')" = "true"
+
+# Touched once after the 2026-09-08 repository recreation so GitHub registers this workflow.
