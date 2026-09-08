@@ -6,6 +6,11 @@ on:
       - '*'
 
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release to tag and publish, without the leading v (e.g. 0.1.12-lgpl-8). Leave empty for a build-only run."
+        required: false
+        default: ""
 
 jobs:
   build:
@@ -44,13 +49,27 @@ jobs:
           ./buildall.sh
         env:
           GRADLE_OPTS: -Xmx4G
-      - name: Get tag name
-        if: startsWith(github.ref, 'refs/tags/')
+      # One run does the whole release. A manual run WITH a version behaves like pushing the tag
+      # "v<version>": the tag is created at this commit in the publish step, after the build
+      # succeeded, and the immutable release is published in the same run. A manual run without a
+      # version is build-only, as before. A tag push behaves as it always has.
+      - name: Resolve release tag
         run: |
-          set -x
-          echo "VERSION_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            tag="${GITHUB_REF_NAME}"; release=1
+          elif [[ -n "${{ inputs.version }}" ]]; then
+            tag="v${{ inputs.version }}"
+            [[ "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]] || { echo "version must look like 0.1.12-lgpl-8"; exit 1; }
+            release=1
+          else
+            tag=""; release=0
+          fi
+          echo "VERSION_TAG=${tag}" >> "${GITHUB_ENV}"
+          echo "RELEASE=${release}" >> "${GITHUB_ENV}"
+          echo "tag=${tag} release=${release}"
       - name: Copy build artifacts
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.RELEASE == '1'
         run: |
           set -euo pipefail
           mkdir -p dist
@@ -65,7 +84,7 @@ jobs:
           (cd dist && sha256sum *.aar build-inputs.sh build-manifest.txt > SHA256SUMS.txt)
 
       - name: Upload workflow artifact
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.RELEASE == '1'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: android-libmpv-${{ env.VERSION_TAG }}
@@ -73,7 +92,7 @@ jobs:
           if-no-files-found: error
 
       - name: Attest release evidence
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.RELEASE == '1'
         uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
         with:
           subject-path: |
@@ -81,12 +100,18 @@ jobs:
             dist/SHA256SUMS.txt
 
       - name: Publish immutable GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.RELEASE == '1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           tag="${VERSION_TAG}"
+          # A manual run with a version has no tag yet: create it at this commit so the release,
+          # the attestation and "git checkout <tag>" agree. Only reached after a successful build.
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            git tag "${tag}" "${GITHUB_SHA}"
+            git push origin "refs/tags/${tag}"
+          fi
           state=$(gh release view "${tag}" --json isDraft,isImmutable,targetCommitish 2>/dev/null || true)
           if [ -z "${state}" ]; then
             gh release create "${tag}" --draft --target "${GITHUB_SHA}" \
