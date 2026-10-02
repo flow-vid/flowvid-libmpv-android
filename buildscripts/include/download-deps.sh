@@ -22,7 +22,8 @@ if [ ! -d libxml2 ]; then
 fi
 
 # dav1d
-[ ! -d dav1d ] && git clone --depth 1 https://github.com/videolan/dav1d
+# dav1d — PINNED to a release tag (was unpinned master, so every build could differ)
+[ ! -d dav1d ] && git clone --depth 1 --branch $v_dav1d https://github.com/videolan/dav1d
 
 # ffmpeg — ALWAYS pin to the release tag (was only pinned when IN_CI=1; our build pulled master).
 if [ ! -d ffmpeg ]; then
@@ -53,8 +54,9 @@ if [ ! -d unibreak ]; then
 		tar -xz -C unibreak --strip-components=1
 fi
 
-# libass — PINNED to 0.17.4 (master pulled ahead of stable mpv 0.41.0 → broke Android rendering)
-[ ! -d libass ] && git clone --depth 1 --branch 0.17.4 https://github.com/libass/libass
+# libass — PINNED to a 0.17.x release (master pulled ahead of stable mpv 0.41.0 → broke Android rendering).
+# 0.17.5 is a patch release on the same branch: two out-of-bounds fixes, no API change.
+[ ! -d libass ] && git clone --depth 1 --branch $v_libass https://github.com/libass/libass
 
 # lua
 if [ ! -d lua ]; then

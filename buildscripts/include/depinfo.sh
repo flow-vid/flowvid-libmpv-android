@@ -12,10 +12,12 @@ v_sdk_build_tools=35.0.0
 v_lua=5.2.4
 v_unibreak=6.1
 v_harfbuzz=12.2.0
-v_fribidi=1.0.16
-v_freetype=2.14.1
-v_mbedtls=3.6.5
+v_fribidi=1.0.17
+v_freetype=2.14.3
+v_mbedtls=3.6.7
 v_libxml2=2.13.5
+v_dav1d=1.5.4
+v_libass=0.17.5
 
 
 ## Dependency tree
@@ -38,11 +40,12 @@ dep_mpv_android=(mpv)
 
 ## for CI workflow
 
-# pinned ffmpeg revision — n8.0 (latest). The earlier vo=gpu black screen was actually a PAUSE bug
+# pinned ffmpeg revision — n8.1.3 (8.1 point release; was n8.0, which lacked the 8.0.1-8.0.3 and 8.1.x
+# security fixes). The earlier vo=gpu black screen was actually a PAUSE bug
 # in the app, not FFmpeg 8.0; once fixed, mpv 0.41 + FFmpeg 8.0 decode correctly. FlowVidTV uses
 # vo=mediacodec_embed (HW, correct colors) by default and vo=gpu+software only for the styled-subs
 # mode, so the n7.1 downgrade is unnecessary. Stay on latest for newest codec/security fixes.
-v_ci_ffmpeg=n8.0
+v_ci_ffmpeg=n8.1.3
 
 # filename used to uniquely identify a build prefix
-ci_tarball="prefix-ndk-${v_ndk}-lua-${v_lua}-unibreak-${v_unibreak}-harfbuzz-${v_harfbuzz}-fribidi-${v_fribidi}-freetype-${v_freetype}-mbedtls-${v_mbedtls}-ffmpeg-${v_ci_ffmpeg}.tgz"
+ci_tarball="prefix-ndk-${v_ndk}-lua-${v_lua}-unibreak-${v_unibreak}-harfbuzz-${v_harfbuzz}-fribidi-${v_fribidi}-freetype-${v_freetype}-mbedtls-${v_mbedtls}-dav1d-${v_dav1d}-libass-${v_libass}-ffmpeg-${v_ci_ffmpeg}.tgz"
