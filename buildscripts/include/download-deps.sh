@@ -65,10 +65,11 @@ if [ ! -d lua ]; then
 		tar -xz -C lua --strip-components=1
 fi
 
-# libplacebo — PINNED to v7.360.1 (the minimum mpv 0.41.0's meson requires; master broke ABI)
-[ ! -d libplacebo ] && git clone --depth 1 --recursive --branch v7.360.1 https://github.com/haasn/libplacebo
+# libplacebo — PINNED to a release tag (master broke ABI once). v7.387.0 (2026-10-25) adds 24 API functions and
+# removes none, so mpv 0.41.0 builds unchanged; v7.360.1 is the minimum mpv 0.41.0's meson requires.
+[ ! -d libplacebo ] && git clone --depth 1 --recursive --branch $v_libplacebo https://github.com/haasn/libplacebo
 
 # mpv — PINNED to v0.41.0 stable (master HEAD = v0.41.0-dev was unstable on some Android devices).
-[ ! -d mpv ] && git clone --depth 1 --branch v0.41.0 https://github.com/mpv-player/mpv
+[ ! -d mpv ] && git clone --depth 1 --branch $v_mpv https://github.com/mpv-player/mpv
 
 cd ..

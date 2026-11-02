@@ -1,8 +1,18 @@
 name: build
 
 on:
-  - push
-  - pull_request
+  # Branch pushes only: a release tag is built by build_release.yml, so a tag push no longer builds twice.
+  # Text-only changes (README, NOTICE, LICENSE) do not rebuild four ABIs.
+  push:
+    branches: ['**']
+    paths-ignore: ['**.md', 'NOTICE', 'LICENSE']
+  pull_request:
+    paths-ignore: ['**.md', 'NOTICE', 'LICENSE']
+
+# A newer push to the same branch replaces an older run that is still building.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   linux:

@@ -10,9 +10,9 @@ components such as x264 and x265 are not included.
 This repository is derived from [`abdallahmehiz/mpv-android`](https://github.com/abdallahmehiz/mpv-android)
 and retains its Android bindings while adding FlowVid's pinned LGPL build and immutable release path.
 
-FlowVid Android and Android TV use immutable release [`v0.1.12-lgpl-8`](../../releases/tag/v0.1.12-lgpl-8).
-Its AAR is byte-identical to `v0.1.12-lgpl-6` and has SHA-256
-`729a70c1ac86ba4f1e03a9bde73762f6370ed97ae08dc8faabf448edcf9ebef6`.
+FlowVid Android and Android TV use immutable release [`v0.1.12-lgpl-9`](../../releases/tag/v0.1.12-lgpl-9)
+(mpv 0.41.0, FFmpeg n8.1.3). Its AAR has SHA-256
+`b3bc7cb546d480c9d5aac431069b2e8ddec4a6f95724ee4895fc6cad1ec94658`.
 
 ## Capabilities
 

@@ -61,11 +61,8 @@ elif [ "$1" = "install" ]; then
 	msg "Fetching SDK + NDK"
 	IN_CI=1 ./include/download-sdk.sh
 
-	msg "Fetching mpv"
-	mkdir -p deps/mpv
-	$WGET https://github.com/mpv-player/mpv/archive/master.tar.gz -O master.tgz
-	tar -xzf master.tgz -C deps/mpv --strip-components=1
-	rm master.tgz
+	# mpv is NOT fetched here any more: this used to unpack mpv master into deps/mpv, so the CI check built a
+	# different mpv than the release (download-deps.sh clones the pinned $v_mpv when deps/mpv is absent).
 
 	msg "Trying to fetch existing prefix"
 	mkdir -p prefix
